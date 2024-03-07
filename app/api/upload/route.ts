@@ -3,30 +3,19 @@ import OpenAI from "openai";
 import pdfParse from "pdf-parse";
 
 export async function POST(req: NextRequest) {
-  const formData: FormData = await req.formData();
-  const uploadedFiles = formData.getAll("file");
-  const description = formData.get("description");
+  const { resume: base64EncodedFile, description } = await req.json();
 
-  if (uploadedFiles.length === 0) {
+  if (!base64EncodedFile) {
     return new NextResponse(JSON.stringify({ error: "No files uploaded." }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  const uploadedFile = uploadedFiles[0];
-
-  if (!(uploadedFile instanceof File)) {
-    return new NextResponse(
-      JSON.stringify({ error: "Uploaded content is not a file." }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-
-  const fileBuffer = Buffer.from(await uploadedFile.arrayBuffer());
+  const fileBuffer = Buffer.from(
+    base64EncodedFile.split("base64,")[1],
+    "base64"
+  );
 
   try {
     const parsedData = await pdfParse(fileBuffer);

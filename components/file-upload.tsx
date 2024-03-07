@@ -20,21 +20,41 @@ export default function FileUpload() {
 
     setLoading(true);
     setError("");
-    const formData = new FormData();
-    formData.append("file", resume as File);
-    formData.append("description", description);
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      // console.log(await response.text());
-      const data = await response.json();
-      setImprovedText(data.text);
+
+    const reader = new FileReader();
+    reader.readAsDataURL(resume);
+    reader.onload = async () => {
+      const base64String = reader.result;
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            resume: base64String,
+            description: description,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(
+            "Failed to upload. Server responded with " + response.status
+          );
+        }
+        const data = await response.json();
+        setImprovedText(data.text);
+      } catch (error) {
+        console.error("Error:", error);
+        setError("Failed to generate improved text. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    reader.onerror = (error) => {
+      console.error("Error reading file:", error);
+      setError("Failed to read the file.");
       setLoading(false);
-    } catch (error) {
-      console.error("Error:", error);
-    }
+    };
   };
 
   const replaceWithBr = () => improvedText.replace(/\n/g, "<br />");
