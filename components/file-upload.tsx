@@ -7,25 +7,29 @@ import { Input } from "@/components/ui/input";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
 export default function FileUpload() {
-  const [improvedText, setImprovedText] = useState("");
-  const [description, setDescription] = useState("");
+  const [improvedText, setImprovedText] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [resume, setResume] = useState<File>();
   const [loading, setLoading] = useState<boolean>(false);
-
-  function replaceWithBr() {
-    return improvedText.replace(/\n/g, "<br />");
-  }
+  const [error, setError] = useState<string>("");
 
   const handleUpload = async () => {
+    if (!resume) {
+      setError("Please upload a resume before generating.");
+      return;
+    }
+
     setLoading(true);
+    setError("");
     const formData = new FormData();
     formData.append("file", resume as File);
-    formData.append("descrption", description);
+    formData.append("description", description);
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
+      // console.log(await response.text());
       const data = await response.json();
       setImprovedText(data.text);
       setLoading(false);
@@ -33,6 +37,8 @@ export default function FileUpload() {
       console.error("Error:", error);
     }
   };
+
+  const replaceWithBr = () => improvedText.replace(/\n/g, "<br />");
 
   return (
     <div className="w-2/3 space-y-5 mt-5">
@@ -47,6 +53,7 @@ export default function FileUpload() {
         }}
       />
       <Textarea
+        value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Job Description"
         className="h-32"
@@ -65,6 +72,7 @@ export default function FileUpload() {
       </div>
       <div className="">
         <p dangerouslySetInnerHTML={{ __html: replaceWithBr() }} />
+        {error && <p className="text-red-400 font-bold">{error}</p>}
       </div>
     </div>
   );
