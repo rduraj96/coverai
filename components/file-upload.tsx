@@ -1,5 +1,4 @@
 "use client";
-import "filepond/dist/filepond.min.css";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "./ui/button";
