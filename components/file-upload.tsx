@@ -4,9 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "./ui/button";
 import { Input } from "@/components/ui/input";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { downloadPDF, parseCoverLetterResponse } from "@/utils/downloadPDF";
 
 export default function FileUpload() {
-  const [improvedText, setImprovedText] = useState<string>("");
+  const [coverLetter, setCoverLetter] = useState<string>("");
+  const [sections, setSections] = useState<CoverLetterSections>();
   const [description, setDescription] = useState<string>("");
   const [resume, setResume] = useState<File>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -42,7 +44,10 @@ export default function FileUpload() {
           );
         }
         const data = await response.json();
-        setImprovedText(data.text);
+        setCoverLetter(data.text);
+        const parsedSections = parseCoverLetterResponse(data.text);
+        console.log("Parsed sections:" + parsedSections);
+        setSections(parsedSections);
       } catch (error) {
         console.error("Error:", error);
         setError("Failed to generate improved text. Please try again.");
@@ -57,7 +62,9 @@ export default function FileUpload() {
     };
   };
 
-  const replaceWithBr = () => improvedText.replace(/\n/g, "<br />");
+  const replaceWithBr = (text: string) => text.replace(/\n/g, "<br />");
+
+  // const sections = parseCoverLetterResponse(coverLetter);
 
   return (
     <div className="w-2/3 space-y-5 mt-5">
@@ -90,7 +97,49 @@ export default function FileUpload() {
         )}
       </div>
       <div className="">
-        <p dangerouslySetInnerHTML={{ __html: replaceWithBr() }} />
+        {/* <p
+          dangerouslySetInnerHTML={{
+            __html: replaceWithBr(coverLetter),
+          }}
+        /> */}
+        {sections && (
+          <div>
+            <p
+              dangerouslySetInnerHTML={{
+                __html: replaceWithBr(sections.details),
+              }}
+            />
+            <br></br>
+            <p
+              dangerouslySetInnerHTML={{ __html: replaceWithBr(sections.date) }}
+            />
+            <br></br>
+            <p
+              dangerouslySetInnerHTML={{
+                __html: replaceWithBr(sections.greetings),
+              }}
+            />
+            <br></br>
+            <p
+              dangerouslySetInnerHTML={{ __html: replaceWithBr(sections.body) }}
+            />
+            <br></br>
+            <p
+              dangerouslySetInnerHTML={{
+                __html: replaceWithBr(sections.closing),
+              }}
+            />
+          </div>
+        )}
+
+        {coverLetter && (
+          <div className="w-full flex items-center justify-center mt-4">
+            <Button onClick={() => downloadPDF(coverLetter)} size={"lg"}>
+              {" "}
+              Download PDF
+            </Button>
+          </div>
+        )}
         {error && <p className="text-red-400 font-bold">{error}</p>}
       </div>
     </div>

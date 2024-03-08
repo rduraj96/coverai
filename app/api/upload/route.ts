@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
             "Write a cover letter for the job description below using references from my resume:\n" +
             parsedText +
             "\nJob Description:\n" +
-            description,
+            description +
+            "\nPlease format the cover letter with labeled sections: Applicant Details, Date, Greeting, Body, and Closing.",
         },
       ],
       max_tokens: 1000,
