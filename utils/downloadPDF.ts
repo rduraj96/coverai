@@ -86,5 +86,5 @@ export function downloadPDF(response: string) {
   posY = addSectionText(sections.body, posY, 20) + 6;
   posY = addSectionText(sections.closing, posY, 20) + 10;
 
-  doc.save("ProfessionalCoverLetter.pdf");
+  doc.save("cover-letter.pdf");
 }
